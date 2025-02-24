@@ -2,143 +2,210 @@
 <html lang="en">
 <head xmlns="http://www.w3.org/1999/xhtml">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Car Price Predictor</title>
     <link rel="stylesheet" href="static/css/style.css">
-    <link rel="stylesheet" type="text/css"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-            crossorigin="anonymous"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
 
-</head>
-<body class="bg-dark">
+    <style>
+        body {
+            background: linear-gradient(135deg, #3047ae, #542386); /* Gradient Background */
+            background-color: #667eea; /* Fallback background */
+            font-family: Arial, sans-serif;
+            color: rgb(64, 2, 2);
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
 
-<div class="container">
-    <div class="row">
-        <div class="card mt-50" style="width: 100%; height: 100%">
-            <div class="card-header" style="text-align: center">
+        .container {
+            padding: 40px;
+        }
+
+        .form-container {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: rgb(225, 215, 215);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .form-control {
+            width: 95%;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #552121;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #ff8c00, #ff4500);
+            color: rgb(75, 38, 38);
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #ff4500, #ff8c00);
+        }
+
+        .card-header h1 {
+            margin-bottom: 30px;
+        }
+
+        .card-body h5 {
+            margin-bottom: 30px;
+        }
+
+        #prediction {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Make the page responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 15px;
+            }
+
+            .form-control {
+                width: 100%;
+            }
+
+            .btn {
+                font-size: 16px;
+                padding: 12px;
+            }
+        }
+
+    </style>
+</head>
+
+<body class="bg-dark">
+    <div class="container">
+        <div class="card mt-50">
+            <div class="card-header">
                 <h1>Welcome to Car Price Predictor</h1>
             </div>
             <div class="card-body">
-                <div class="col-12" style="text-align: center">
-                    <h5>This app predicts the price of a car you want to sell. Try filling the details below: </h5>
+                <div>
+                    <h5>This app predicts the price of a car you want to sell. Try filling the details below:</h5>
                 </div>
                 <br>
-                <form method="post" accept-charset="utf-8" name="Modelform">
-                    <div class="col-md-10 form-group" style="text-align: center">
-                        <label><b>Select the company:</b> </label><br>
-                        <select class="selectpicker form-control" id="company" name="company" required="1"
-                                onchange="load_car_models(this.id,'car_models')"
-                                data-companies='{{ companies | tojson }}' data-car-models='{{ car_models | tojson }}'>
+                <div class="form-container">
+                    <form method="post" accept-charset="utf-8" name="Modelform" onsubmit="send_data(); return false;">
+                        <label style="font-size: 16px; font-weight: bold;">Select the company:</label><br>
+                        <select id="company" name="company" required onchange="load_car_models()" class="form-control">
                             {% for company in companies %}
                             <option value="{{ company }}">{{ company }}</option>
                             {% endfor %}
                         </select>
-                    </div>
-                    <div class="col-md-10 form-group" style="text-align: center">
-                        <label><b>Select the model:</b> </label><br>
-                        <select class="selectpicker form-control" id="car_models" name="car_models" required="1">
-                        </select>
-                    </div>
-                    <div class="col-md-10 form-group" style="text-align: center">
-                        <label><b>Select Year of Purchase:</b> </label><br>
-                        <select class="selectpicker form-control" id="year" name="year" required="1">
+                        
+                        <label style="font-size: 16px; font-weight: bold;">Select the model:</label><br>
+                        <select id="car_models" name="car_models" required class="form-control"></select>
+                        
+                        <label style="font-size: 16px; font-weight: bold;">Select Year of Purchase:</label><br>
+                        <select id="year" name="year" required class="form-control">
                             {% for year in years %}
                             <option value="{{ year }}">{{ year }}</option>
                             {% endfor %}
                         </select>
-                    </div>
-                    <div class="col-md-10 form-group" style="text-align: center">
-                        <label><b>Select the Fuel Type:</b> </label><br>
-                        <select class="selectpicker form-control" id="fuel_type" name="fuel_type" required="1">
+                        
+                        <label style="font-size: 16px; font-weight: bold;">Select the Fuel Type:</label><br>
+                        <select id="fuel_type" name="fuel_type" required class="form-control">
                             {% for fuel in fuel_types %}
                             <option value="{{ fuel }}">{{ fuel }}</option>
                             {% endfor %}
                         </select>
-                    </div>
-                    <div class="col-md-10 form-group" style="text-align: center">
-                        <label><b>Enter the Number of Kilometres that the car has travelled:</b> </label><br>
-                        <input type="text" class="form-control" id="kilo_driven" name="kilo_driven"
-                               placeholder="Enter the kilometres driven ">
-                    </div>
-                    <div class="col-md-10 form-group" style="text-align: center">
-                        <button  class="btn btn-primary form-control" onclick="send_data()">Predict Price</button>
-                    </div>
-                </form>
-                <br>
-                <div class="row">
-                    <div class="col-12" style="text-align: center">
-                        <h4><span id="prediction"></span></h4>
-                    </div>
+                        
+                        <label style="font-size: 16px; font-weight: bold;">Enter the Number of Kilometres that the car has travelled:</label><br>
+                        <input type="text" id="kilo_driven" name="kilo_driven" placeholder="Enter the kilometres driven" required class="form-control">
+                        
+                        <button type="submit" class="btn">Predict Price</button>
+                    </form>
+                    <br>
+                    <h4><span id="prediction"></span></h4>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    function load_car_models(company_id, car_model_id) {
-        var company = document.getElementById(company_id);
-        var car_model = document.getElementById(car_model_id);
-        var companies = JSON.parse(company.getAttribute('data-companies'));
-        var car_models = JSON.parse(company.getAttribute('data-car-models'));
-        console.log(company.value);
-        car_model.value = "";
-        car_model.innerHTML = "";
 
-        if (companies.includes(company.value)) {
-            car_models.forEach(function(model) {
-                if (model.includes(company.value)) {
-                    var newOption = document.createElement("option");
-                    newOption.value = model;
-                    newOption.innerHTML = model;
-                    car_model.options.add(newOption);
-                }
-            });
-    }
-    }
-
-    function form_handler(event) {
-        event.preventDefault(); // Don't submit the form normally
-    }
-    function send_data()
-    {
-        document.querySelector('form').addEventListener("submit",form_handler);
-
-        var fd=new FormData(document.querySelector('form'));
-
-        var xhr= new XMLHttpRequest({mozSystem: true});
-
-        xhr.open('POST','/predict',true);
-        document.getElementById('prediction').innerHTML="Wait! Predicting Price.....";
-        xhr.onreadystatechange = function(){
-            if(xhr.readyState == XMLHttpRequest.DONE){
-                document.getElementById('prediction').innerHTML="Prediction: ₹"+xhr.responseText;
-
-            }
+    <script>
+        const carData = {
+            "Hyundai": ["Santro Xing", "Grand i10", "Elite i20", "i20 Sportz", "i10 Magna", "i10 Era", "i20 Magna", "Verna Transform", "Creta 1.6", "Fluidic Verna", "Xcent Base", "Verna 1.4", "i10 Sportz", "i20 Active"],
+            "Mahindra": ["Jeep CL550", "Scorpio SLE", "Scorpio S10", "Bolero DI", "Scorpio S4", "Scorpio VLX", "XUV500 W8", "Bolero Power", "Scorpio W", "Bolero SLE", "XUV500", "Thar CRDe", "Scorpio SLX"],
+            "Ford": ["EcoSport Titanium", "Figo", "EcoSport Ambiente", "Figo Diesel", "EcoSport", "Figo Petrol", "Fiesta", "Fusion 1.4"],
+            "Maruti": ["Alto", "Stingray", "Swift", "Wagon", "Baleno", "Dzire", "A", "Eeco", "Esteem", "Ritz", "Celerio", "Versa", "Omni", "Ertiga", "WagonR"],
+            "Skoda": ["Fabia Classic", "Yeti Ambition", "Laura", "Superb 1.8", "Octavia Classic", "Rapid Elegance", "Fabia 1.2L", "Rapid"]
         };
 
-        xhr.onload= function(){};
+        const years = [2007, 2006, 2014, 2012, 2013, 2016, 2015, 2010, 2017, 2008, 2018, 2011, 2019, 2009, 2005, 2000, 2003, 2004, 1995, 2002, 2001];
+        const fuelTypes = ["Petrol", "Diesel", "LPG", "Electric", "Hybrid"];
 
-        xhr.send(fd);
-    }
-</script>
+        function populateDropdown(id, values) {
+            const select = document.getElementById(id);
+            select.innerHTML = "";
+            values.forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+        }
 
+        function load_car_models() {
+            const company = document.getElementById("company").value;
+            populateDropdown("car_models", carData[company] || []);
+        }
 
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
-        crossorigin="anonymous"></script>
+        document.addEventListener("DOMContentLoaded", () => {
+            populateDropdown("company", Object.keys(carData));
+            populateDropdown("year", years);
+            populateDropdown("fuel_type", fuelTypes);
+            load_car_models();
+        });
+
+        function form_handler(event) {
+            event.preventDefault(); // Don't submit the form normally
+        }
+
+        function send_data() {
+            document.querySelector('form').addEventListener("submit", form_handler);
+            var fd = new FormData(document.querySelector('form'));
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/predict', true);
+            document.getElementById('prediction').innerHTML = "Wait! Predicting Price.....";
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == XMLHttpRequest.DONE) {
+                    document.getElementById('prediction').innerHTML = "Prediction: ₹" + xhr.responseText;
+                }
+            };
+            xhr.send(fd);
+        }
+    </script>
+    
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 </body>
 </html>
